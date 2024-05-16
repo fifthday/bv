@@ -7,7 +7,7 @@ data class SpaceVideoData(
     companion object {
         fun fromWebSpaceVideoData(webSpaceVideoData: dev.aaa1115910.biliapi.http.entity.user.WebSpaceVideoData) =
             SpaceVideoData(
-                videos = webSpaceVideoData.list?.vlist
+                videos = webSpaceVideoData.archives
                     ?.map { SpaceVideo.fromSpaceVideoItem(it) }
                     ?: emptyList(),
                 page = SpaceVideoPage(
@@ -42,16 +42,16 @@ data class SpaceVideo(
     val danmaku: Int
 ) {
     companion object {
-        fun fromSpaceVideoItem(spaceVideoItem: dev.aaa1115910.biliapi.http.entity.user.WebSpaceVideoData.SpaceVideoListItem.VListItem) =
+        fun fromSpaceVideoItem(spaceVideoItem: dev.aaa1115910.biliapi.http.entity.user.WebSpaceVideoData.VListItem) =
             SpaceVideo(
                 aid = spaceVideoItem.aid,
                 bvid = spaceVideoItem.bvid,
                 title = spaceVideoItem.title,
                 cover = spaceVideoItem.pic,
-                author = spaceVideoItem.author,
-                duration = convertMmSsToSeconds(spaceVideoItem.length),
-                play = spaceVideoItem.play,
-                danmaku = spaceVideoItem.videoReview
+                author = spaceVideoItem.author.name,
+                duration = spaceVideoItem.duration,
+                play = spaceVideoItem.stat.view,
+                danmaku = spaceVideoItem.stat.danmaku
             )
 
         fun fromSpaceVideoItem(spaceVideoItem: dev.aaa1115910.biliapi.http.entity.user.AppSpaceVideoData.SpaceVideoItem) =

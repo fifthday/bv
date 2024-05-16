@@ -736,7 +736,7 @@ object BiliHttpApi {
         pageNumber: Int = 1,
         pageSize: Int = 30,
         sessData: String
-    ): BiliResponse<WebSpaceVideoData> = client.get("/x/space/wbi/arc/search") {
+    ): BiliResponse<WebSpaceVideoData> = client.get("/x/space/arc/list") {
         parameter("mid", mid)
         parameter("order", order)
         parameter("tid", tid)
