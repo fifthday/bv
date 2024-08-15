@@ -1,0 +1,71 @@
+name: Release Build Xu Manually
+
+on: workflow_dispatch
+
+jobs:
+  build-release:
+    name: Build Release Apk
+    runs-on: macos-latest
+    if: github.repository == 'fifthday/bv'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: develop
+          fetch-depth: 0
+          submodules: "true"
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build apk
+        run: ./gradlew assembleDefaultRelease
+
+      - name: Read release apk output metadata
+        id: apk-meta-release
+        uses: juliangruber/read-file-action@v1
+        with:
+          path: app/build/outputs/apk/default/release/output-metadata.json
+
+      - name: Parse apk infos
+        id: apk-infos
+        run: |
+          echo "release_info_version_code=${{ fromJson(steps.apk-meta-release.outputs.content).elements[0].versionCode }}" >> $GITHUB_ENV
+          echo "release_info_version_name=${{ fromJson(steps.apk-meta-release.outputs.content).elements[0].versionName }}" >> $GITHUB_ENV
+
+      # - name: Get changelog
+      #   id: changelog
+      #   run: |
+      #     {
+      #       echo "changelog<<EOF"
+      #       echo "$(git log --pretty=format:"- %s (%h)" ${{ github.event.before }}..${{ github.sha }})"
+      #       echo "EOF"
+      #     } >> "$GITHUB_ENV"
+
+      # upload artifacts release
+
+      - name: Archive release build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Release build artifact
+          path: app/build/outputs/apk/default/release/BV_${{ env.release_info_version_code }}_${{ env.release_info_version_name }}_default_universal.apk
+
+      # upload to github release
+
+      # - name: Publish Release
+      #   uses: softprops/action-gh-release@v2
+      #   with:
+      #     files: |
+      #       app/build/outputs/apk/default/release/BV_${{ env.release_info_version_code }}_${{ env.release_info_version_name }}_default_universal.apk
+      #     tag_name: ${{ github.ref_name }}
+      #     name: ${{ env.release_info_version_name }}
+      #     prerelease: false
+      #     body: ${{ env.changelog }}
+      #     target_commitish: ${{ github.sha }}
